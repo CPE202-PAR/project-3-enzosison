@@ -8,6 +8,9 @@ class HuffmanNode:
     def __lt__(self, other):
         return comes_before(self, other) # Allows use of Python List sorting
 
+    def __repr__(self):
+        return "%s %s %s %s" % (self.char_ascii, self.freq, self.left, self.right)
+
     def set_left(self, node):
         self.left = node
 
@@ -70,13 +73,6 @@ def create_huff_tree(freq_list):
         if frequency != 0:
             new_node = HuffmanNode(askii, frequency)
             node_list.append(new_node)
-            # if len(node_list) == 0:
-            #     node_list.append(new_node)
-            # for i in range(len(node_list)):
-            #     if comes_before(new_node, node_list[i]) == True:
-            #         node_list.insert(i, new_node)
-            # if new_node not in node_list:
-            #     node_list.append(new_node)
     node_list = sorted(node_list)
     while(len(node_list) > 1):
         temp = []
@@ -87,6 +83,35 @@ def create_huff_tree(freq_list):
 
     return node_list[0]
 
+    #Attempt with a different method
+
+    # if sum(freq_list) == 0:
+    #     return None
+    # node_list = []
+    # break_flag = False
+    # for askii, frequency in enumerate(freq_list):
+    #     if frequency != 0:
+    #         new_node = HuffmanNode(askii, frequency)
+    #         if len(node_list) == 0:
+    #             node_list.append(new_node)
+    #         else:
+    #             for index, node in enumerate(node_list):
+    #                 if comes_before(new_node, node) == True:
+    #                     node_list.insert(index, new_node)
+    #                     break_flag = True
+    #                     break
+    # if break_flag == True:
+    #     node_list.append(new_node)
+    # print(node_list)
+    # while (len(node_list) > 1):
+    #     x = combine(node_list[0], node_list[1])
+    #     node_list.pop(0)
+    #     node_list.pop(0)
+    #     for index, node in enumerate(node_list):
+    #         if comes_before(x, node) == True:
+    #             node_list.insert(index, x)
+    #             break
+    # return node_list[0]
 
 def create_code(node):
     """Returns an array (Python list) of Huffman codes. For each character, use the integer ASCII representation 
@@ -136,7 +161,7 @@ def huffman_encode(in_file, out_file):
     Take not of special cases - empty file and file with only one unique character"""
 
     freq_list = cnt_freq(in_file)
-    tree = create_huff_tree(freq_list)
+    tree = create_huff_tree(freq_list) #something is going wrong here or next line...
     code = create_code(tree)
     outf = open(out_file, "w")
     outf.write(create_header(freq_list))
@@ -147,6 +172,46 @@ def huffman_encode(in_file, out_file):
         print(code[ord(char)] + " ")
         outf.write(code[ord(char)])
     outf.close()
+
+def parse_header(header_string):
+    entry_list = [0] * 256
+    list1 = header_string.split()
+    for index in range(0, len(list1), 2):
+        freq_value = int(list1[index+1])
+        entry_list[int(list1[index])] = freq_value
+    return entry_list
+
+def huffman_decode(encoded_file, decode_file):
+    try:
+        f = open(encoded_file, "r")
+    except:
+        raise FileNotFoundError
+    d = open(decode_file, "w+")
+    first_line = f.readline()
+    freq_list = parse_header(first_line)
+    tree = create_huff_tree(freq_list)
+    second_line = f.readline()
+    current = tree
+    for number in second_line:
+        if number == "0":
+            current = current.left
+            if current.left == None and current.right == None:
+                d.write(chr(current.char_ascii))
+                current = tree
+        elif number == "1":
+            current = current.right
+            if current.left == None and current.right == None:
+                d.write(chr(current.char_ascii))
+                current = tree
+
+
+
+# huffman_encode("file1.txt", "file1_binary.txt")
+# huffman_decode("file1_soln.txt", "file1_letters.txt")
+# print(parse_header("97 2 98 4 99 8 100 16 102 2"))
+
+
+
 
 
 
